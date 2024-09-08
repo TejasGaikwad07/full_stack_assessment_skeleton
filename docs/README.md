@@ -1,104 +1,58 @@
-# Full-Stack Assessment Project
+# Full-Stack Assessment Project Solutions
 
-This README provides detailed instructions on how to set up and run this full-stack project, which includes a MySQL database, a React frontend, and a Node.js backend.
+## 1. Database
 
-## Prerequisites
+### Solution
 
-- Docker and Docker Compose
-- Node.js (version 14 or higher recommended)
-- npm (usually comes with Node.js)
-- Git
+To normalize the data and improve the database structure, I implemented the following changes:
 
-## Getting Started
+1. Created a `users` table with columns: `id` (primary key), `username`, and `email`.
+2. Created a `homes` table with columns: `id` (primary key), `street_address`, `city`, `state`, `zip_code`, and other relevant home attributes.
+3. Implemented a many-to-many relationship between users and homes using a junction table `user_home_interests` with columns: `user_id` (foreign key to users.id) and `home_id` (foreign key to homes.id).
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/TejasGaikwad07/full_stack_assessment_skeleton.git
-   cd full_stack_assessment_skeleton
-   ```
+This structure allows for efficient querying of user-home relationships while maintaining data integrity. The main challenge was ensuring that the data migration from the original `user_home` table to the new structure was done correctly, which I accomplished using a series of SQL statements in the `99_final_db_dump.sql` file.
 
-2. Set up the database:
-   ```
-   docker-compose -f docker-compose.final.yml up --build -d
-   ```
-   This command will start a MySQL container with the final database structure and data.
+## 2. React SPA
 
-## Running the Backend
+### Solution
 
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
+For the React SPA, I implemented the following features:
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+1. Homes for User Page:
+   - Created a dropdown component to select users, populating it with data from the `/user/find-all` API.
+   - Implemented a `HomeCard` component to display individual home information.
+   - Used Redux Toolkit to manage the global state, including selected user and related homes.
+   - Fetched homes data using the `/home/find-by-user` API when a user is selected.
 
-3. Start the backend server:
-   ```
-   npm run start
-   ```
-   The backend should now be running on `http://localhost:3000` (or the port specified in your .env file).
+2. Edit User Functionality:
+   - Developed a modal component that appears when the "Edit User" button is clicked on a home card.
+   - Populated the modal with checkboxes for all users, using data from the `/user/find-by-home` API.
+   - Implemented logic to ensure at least one user is always selected.
+   - Used Redux to manage the state of selected users in the modal.
+   - On save, called the `/home/update-users` API to update the backend, then refreshed the home list.
 
-## Running the Frontend
+The main challenge was managing the state updates efficiently, especially when toggling user selections in the modal. I solved this by using Redux Toolkit's `createSlice` function to handle state updates in a more predictable manner.
 
-1. Open a new terminal window and navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
+## 3. Backend API
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+### Solution
 
-3. Start the frontend development server:
-   ```
-   npm run dev
-   ```
-   The frontend should now be accessible at `http://localhost:5173` (or the port specified by Vite).
+For the backend API, I implemented the following endpoints using NestJS and TypeORM:
 
-## API Endpoints
+1. GET `/user/find-all`: 
+   - Implemented a simple query to fetch all users from the `users` table.
 
-The following API endpoints are available:
+2. GET `/home/find-by-user`:
+   - Used a JOIN query to fetch homes related to a specific user through the `user_home_interests` table.
+   - Implemented pagination with a default page size of 50 items.
 
-- GET `/user/find-all`: Returns all users from the database.
-- GET `/home/find-by-user`: Returns all homes related to a user.
-- GET `/user/find-by-home`: Returns all users related to a home.
-- POST `/home/update-users`: Updates the users associated with a home.
+3. GET `/user/find-by-home`:
+   - Similar to `/home/find-by-user`, but reversed the relationship to find users for a specific home.
 
-## Database Structure
+4. POST `/home/update-users`:
+   - Implemented a transaction to ensure data consistency when updating user-home relationships.
+   - Made this endpoint idempotent by first deleting existing relationships for the home, then inserting the new ones.
 
-The database has been normalized and consists of the following main tables:
-- `user`: Stores user information (username, email).
-- `home`: Stores home information.
-- (Any additional tables you created for the relationship)
+The main challenge was ensuring the `/home/update-users` endpoint was both efficient and idempotent. I solved this by using a database transaction and a two-step process of deleting and reinserting relationships.
 
-To view or modify the database directly, you can use the following credentials:
-- Host: localhost
-- Port: 3306
-- Database: home_db
-- Username: db_user
-- Password: (As specified in the docker-compose file)
-
-## Troubleshooting
-
-If you encounter any issues:
-
-1. Ensure all services are running (database, backend, frontend).
-2. Check the console output for any error messages.
-3. Verify that the ports specified in the .env files are not being used by other applications.
-4. If database-related issues occur, you can reset the database to its initial state using:
-   ```
-   docker-compose -f docker-compose.final.yml down
-   docker-compose -f docker-compose.final.yml up --build -d
-   ```
-
-## Additional Notes
-
-- The frontend uses Redux for state management. The store configuration can be found in the appropriate files within the frontend directory.
-- The backend uses [NestJS/Express] with [TypeORM/Prisma/Sequelize] for database interactions.
-- Ensure that your .env files are properly configured in both frontend and backend directories.
-
-If you have any questions or encounter any issues not covered here, please don't hesitate to reach out.
+For the extra pagination feature, I added query parameters for page number and page size to the `/home/find-by-user` endpoint, with default values if not provided. This allows for more flexible querying of large datasets.
