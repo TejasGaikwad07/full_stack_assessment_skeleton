@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// GET /home/find-by-user
 router.get('/find-by-user', async (req, res) => {
   const userId = parseInt(req.query.userId as string);
   const page = parseInt(req.query.page as string) || 1;
@@ -44,7 +43,6 @@ router.get('/find-by-user', async (req, res) => {
   }
 });
 
-// PUT /home/update-users
 router.put('/update-users', async (req, res) => {
   const { homeId, userIds } = req.body;
   try {
