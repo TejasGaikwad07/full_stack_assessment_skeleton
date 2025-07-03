@@ -15,7 +15,7 @@ This structure allows for efficient querying of user-home relationships while ma
 ## 2. React SPA
 
 ### Solution
-
+ 
 For the React SPA, I implemented the following features:
 
 1. Homes for User Page:
