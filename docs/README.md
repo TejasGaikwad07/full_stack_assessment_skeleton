@@ -9,7 +9,7 @@ To normalize the data and improve the database structure, I implemented the foll
 1. Created a `users` table with columns: `id` (primary key), `username`, and `email`.
 2. Created a `homes` table with columns: `id` (primary key), `street_address`, `city`, `state`, `zip_code`, and other relevant home attributes.
 3. Implemented a many-to-many relationship between users and homes using a junction table `user_home_interests` with columns: `user_id` (foreign key to users.id) and `home_id` (foreign key to homes.id).
-
+ 
 This structure allows for efficient querying of user-home relationships while maintaining data integrity. The main challenge was ensuring that the data migration from the original `user_home` table to the new structure was done correctly, which I accomplished using a series of SQL statements in the `99_final_db_dump.sql` file.
 
 ## 2. React SPA
